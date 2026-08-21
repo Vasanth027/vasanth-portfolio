@@ -1,1 +1,43 @@
-const nav=document.querySelector('nav'),menu=document.querySelector('#menu');menu.addEventListener('click',()=>nav.classList.toggle('open'));document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.12});document.querySelectorAll('section').forEach(e=>{e.style.opacity=0;e.style.transform='translateY(18px)';e.style.transition='opacity .7s ease,transform .7s ease';io.observe(e)});
+document.documentElement.classList.add('js');
+
+const nav = document.querySelector('#nav');
+const menu = document.querySelector('#menu');
+
+if (menu && nav) {
+  menu.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    menu.setAttribute('aria-expanded', String(open));
+    menu.textContent = open ? '×' : '☰';
+  });
+
+  nav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      menu.setAttribute('aria-expanded', 'false');
+      menu.textContent = '☰';
+    });
+  });
+}
+
+const sections = [...document.querySelectorAll('main section[id]')];
+const links = [...document.querySelectorAll('nav a')];
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('show');
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+const activeObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id));
+  });
+}, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
+
+sections.forEach(section => activeObserver.observe(section));
+
+// Make the hero visible immediately even if the browser delays observers.
+requestAnimationFrame(() => document.querySelector('.hero')?.classList.add('show'));
